@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuestra Historia de Amor</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #fff3f5;
+            background-image: radial-gradient(#ffccd5 1px, transparent 1px);
+            background-size: 20px 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            color: #d90429;
+            font-size: 2rem;
+            margin-bottom: 5px;
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            color: #5c677d;
+            font-size: 1rem;
+            margin-bottom: 25px;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: row;
+            gap: 40px;
+            max-width: 1100px;
+            width: 100%;
+            align-items: flex-start;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(217, 4, 41, 0.1);
+            backdrop-filter: blur(8px);
+        }
+
+        .board-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #board {
+            width: 320px;
+            height: 480px;
+            border: 3px dashed #ff4d6d;
+            background-color: #fff0f3;
+            display: grid;
+            grid-template-columns: repeat(4, 80px);
+            grid-template-rows: repeat(6, 80px);
+            position: relative;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.05);
+            border-radius: 8px;
+        }
+
+        .cell {
+            width: 80px;
+            height: 80px;
+            border: 1px dashed rgba(255, 77, 109, 0.15);
+            box-sizing: border-box;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            align-items: center;
+            width: 360px;
+        }
+
+        .polaroid {
+            background: white;
+            padding: 15px 15px 25px 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            transform: rotate(3deg);
+            border-radius: 4px;
+            width: 240px;
+        }
+
+        .polaroid-img-placeholder {
+            width: 210px;
+            height: 210px;
+            background: #f7f7f7;
+            border: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #aaa;
+            font-size: 0.8rem;
+            text-align: center;
+            padding: 10px;
+            font-weight: bold;
+            border-radius: 2px;
+        }
+
+        .polaroid-text {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 15px;
+            color: #333;
+        }
+
+        #pieces-container {
+            width: 360px;
+            height: 240px;
+            background: #fff;
+            border: 2px solid #ffccd5;
+            border-radius: 12px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .piece {
+            width: 80px;
+            height: 80px;
+            position: absolute;
+            cursor: grab;
+            background-image: url('cess.png');
+            background-size: 320px 480px;
+            border: 1px solid rgba(255,255,255,0.4);
+            box-shadow: 2px 3px 6px rgba(0,0,0,0.3);
+            border-radius: 4px;
+            touch-action: none;
+            z-index: 10;
+        }
+
+        .piece:active {
+            cursor: grabbing;
+            z-index: 1000;
+        }
+
+        #victory-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(255, 243, 245, 0.95);
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .victory-card {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 15px 40px rgba(217, 4, 41, 0.15);
+            max-width: 500px;
+            width: 100%;
+            border: 3px solid #ff4d6d;
+        }
+
+        .poem {
+            font-size: 1.1rem;
+            color: #4a4a4a;
+            line-height: 1.6;
+            font-style: italic;
+        }
+
+        .heart {
+            position: fixed;
+            color: #ff4d6d;
+            animation: floatUp 4s linear infinite;
+            z-index: 10000;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(100vh); opacity: 1; }
+            100% { transform: translateY(-10vh); opacity: 0; }
+        }
+
+        /* AJUSTES EXCLUSIVOS PARA TELÉFONOS (No rompen la lógica del juego) */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            .subtitle {
+                font-size: 0.85rem;
+                margin-bottom: 15px;
+            }
+            .game-container {
+                flex-direction: column; /* Alinea el tablero arriba y las piezas abajo */
+                align-items: center;
+                gap: 20px;
+                padding: 15px;
+            }
+            .sidebar {
+                width: 100%;
+                max-width: 320px;
+                gap: 15px;
+            }
+            #pieces-container {
+                width: 320px; /* Mantiene el tamaño exacto que espera el script */
+                height: 200px;
+            }
+            .polaroid {
+                display: none; /* Oculta la polaroid decorativa en celular para no estorbar el espacio de juego */
+            }
+            .victory-card {
+                padding: 20px;
+                max-width: 90%;
+            }
+            .poem {
+                font-size: 0.95rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Nuestra historia es un rompecabezas... ❤️</h1>
+    <div class="subtitle">Arrastra las piezas del cuadro blanco y colócalas en el tablero de la izquierda.</div>
+
+    <div class="game-container">
+        <div class="board-wrapper">
+            <div id="board"></div>
+        </div>
+        
+        <div class="sidebar">
+            <div class="polaroid">
+                <div class="polaroid-img-placeholder">Completa el rompecabezas para revelar nuestra foto favorita ✨</div>
+                <div class="polaroid-text">...que solo nosotros<br>podemos completar.</div>
+            </div>
+            <div id="pieces-container"></div>
+        </div>
+    </div>
+
+    <div id="victory-screen">
+        <div class="victory-card">
+            <h2>¡Lo lograste! ❤️</h2>
+            <img src="cess.png" style="width: 200px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+            <div class="poem">
+                "Sé que no soy lo mejor, ni la persona perfecta,;<br>
+                a veces soy muy enojon y el orgullo me domina;.<br>
+                pero cuando te veo o tu voz... algo en mí se conecta,<br>
+               pero cuando te veo... algo en mí se conecta,<br><br>
+                Me da una risa nerviosa, un calor en el pecho,<br>
+                y me descubro soñando despierto,<br>
+                me atrapa este deseo tan hecho<br>
+                de querer, simplemente, una vida a tu lado.<br>
+                Una vida en donde los minutos no tengan horario,<br>
+                donde reír por tonterías sea nuestra fortuna;<br>
+                en donde tus abrazos sean mi refugio diario,<br>
+                y para ser felices no nos falte ninguna.<br>
+                y el corazón se entregue, eternamente enamorado."
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const rows = 6;
+        const cols = 4;
+        const pieceSize = 80;
+        
+        const board = document.getElementById('board');
+        const piecesContainer = document.getElementById('pieces-container');
+        const victoryScreen = document.getElementById('victory-screen');
+
+        let correctPiecesCount = 0;
+        const totalPieces = rows * cols;
+
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.dataset.row = r;
+                cell.dataset.col = c;
+                board.appendChild(cell);
+            }
+        }
+
+        let piecesData = [];
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                piecesData.push({ r: r, c: c });
+            }
+        }
+
+        piecesData.sort(() => Math.random() - 0.5);
+
+        piecesData.forEach((pos) => {
+            const piece = document.createElement('div');
+            piece.classList.add('piece');
+            piece.dataset.row = pos.r;
+            piece.dataset.col = pos.c;
+            
+            piece.style.backgroundPosition = `-${pos.c * pieceSize}px -${pos.r * pieceSize}px`;
+            
+            const maxX = piecesContainer.clientWidth - pieceSize;
+            const maxY = piecesContainer.clientHeight - pieceSize;
+            const randomX = Math.random() * maxX;
+            const randomY = Math.random() * maxY;
+            
+            piece.style.left = randomX + 'px';
+            piece.style.top = randomY + 'px';
+            
+            piecesContainer.appendChild(piece);
+            makeElementDraggable(piece);
+        });
+
+        function makeElementDraggable(elmnt) {
+            let currentX = 0, currentY = 0, initialX = 0, initialY = 0;
+            let isPlacedCorrectly = false;
+
+            elmnt.addEventListener('mousedown', dragStart);
+            elmnt.addEventListener('touchstart', dragStart, { passive: false });
+
+            function dragStart(e) {
+                if (isPlacedCorrectly) return;
+                
+                let clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+                let clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+
+                initialX = clientX - elmnt.offsetLeft;
+                initialY = clientY - elmnt.offsetTop;
+
+                if (e.type === 'touchstart') {
+                    document.addEventListener('touchmove', dragMove, { passive: false });
+                    document.addEventListener('touchend', dragEnd);
+                } else {
+                    e.preventDefault();
+                    document.addEventListener('mousemove', dragMove);
+                    document.addEventListener('mouseup', dragEnd);
+                }
+                elmnt.style.zIndex = 1000;
+            }
+
+            function dragMove(e) {
+                let clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+                let clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+                
+                currentX = clientX - initialX;
+                currentY = clientY - initialY;
+
+                elmnt.style.left = currentX + 'px';
+                elmnt.style.top = currentY + 'px';
+            }
+
+            function dragEnd(e) {
+                document.removeEventListener('mousemove', dragMove);
+                document.removeEventListener('mouseup', dragEnd);
+                document.removeEventListener('touchmove', dragMove);
+                document.removeEventListener('touchend', dragEnd);
+                
+                elmnt.style.zIndex = 10;
+
+                const rect = elmnt.getBoundingClientRect();
+                const pieceCenterX = rect.left + rect.width / 2;
+                const pieceCenterY = rect.top + rect.height / 2;
+
+                const targetRow = elmnt.dataset.row;
+                const targetCol = elmnt.dataset.col;
+                
+                const correctCell = board.querySelector(`[data-row="${targetRow}"][data-col="${targetCol}"]`);
+                const cellRect = correctCell.getBoundingClientRect();
+
+                if (Math.abs(pieceCenterX - (cellRect.left + cellRect.width / 2)) < 40 &&
+                    Math.abs(pieceCenterY - (cellRect.top + cellRect.height / 2)) < 40) {
+                    
+                    board.appendChild(elmnt);
+                    elmnt.style.position = 'absolute';
+                    elmnt.style.left = `${targetCol * pieceSize}px`;
+                    elmnt.style.top = `${targetRow * pieceSize}px`;
+                    elmnt.style.boxShadow = 'none';
+                    elmnt.style.border = 'none';
+                    
+                    isPlacedCorrectly = true;
+                    correctPiecesCount++;
+
+                    if (correctPiecesCount === totalPieces) {
+                        setTimeout(triggerVictory, 600);
+                    }
+                }
+            }
+        }
+
+        function triggerVictory() {
+            victoryScreen.style.display = 'flex';
+            setInterval(createHeart, 300);
+        }
+
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.classList.add('heart');
+            heart.innerHTML = '❤️';
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            heart.style.fontSize = (Math.random() * 20 + 15) + 'px';
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 4000);
+        }
+    </script>
+</body>
+</html>
